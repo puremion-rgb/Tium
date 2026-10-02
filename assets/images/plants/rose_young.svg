@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<defs>
+ <linearGradient id="soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9A623C"/><stop offset="1" stop-color="#70432A"/></linearGradient>
+ <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#81C784"/><stop offset="1" stop-color="#2E7D32"/></linearGradient>
+ <linearGradient id="leaf2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A5D66A"/><stop offset="1" stop-color="#4C9A4A"/></linearGradient>
+</defs><ellipse cx="512" cy="790" rx="210" ry="72" fill="url(#soil)"/><ellipse cx="512" cy="770" rx="175" ry="35" fill="#B77A4B" opacity=".55"/>
+<path d="M512 770 C505 680 508 585 512 470" fill="none" stroke="#4A8E42" stroke-width="30" stroke-linecap="round"/>
+
+<path d="M505 640 C425 620 380 555 398 480 C470 480 520 540 505 640Z" fill="url(#leaf)" stroke="#34763A" stroke-width="10"/>
+<path d="M520 655 C605 625 665 565 650 495 C575 500 520 555 520 655Z" fill="url(#leaf2)" stroke="#34763A" stroke-width="10"/>
+<circle cx="512" cy="415" r="68" fill="#EF6B72" stroke="#C74B55" stroke-width="10"/>
+<path d="M465 410 C485 370 540 365 562 405 C535 390 510 405 512 440 C500 430 480 430 465 410Z" fill="#FF9B9F"/>
+</svg>

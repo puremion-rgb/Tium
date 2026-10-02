@@ -1,0 +1,54 @@
+rules_version = '2';
+
+// 틔움 Firestore 보안 규칙
+// - 로그인한 사람은 자기 users/{uid} 아래만 읽고 쓸 수 있다.
+// - XP는 사용자가 정할 수 없고, 앱 규칙(완료 10, 모두 완료 +10, 7일 연속 +30)에 맞는 만큼만 오를 수 있다.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // 한 번 완료할 때 오를 수 있는 XP: 10 / 10+10 / 10+30 / 10+10+30
+    function validGain(gain) {
+      return gain in [0, 10, 20, 40, 50];
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+
+      // 처음 만들 때: 0 XP (시연용 데이터는 430 XP로 시작해서 500까지 허용)
+      allow create: if isOwner(uid)
+        && request.resource.data.totalXp is int
+        && request.resource.data.totalXp >= 0
+        && request.resource.data.totalXp <= 500;
+
+      // 고칠 때: XP는 정해진 만큼만 오르고, 줄어들 수 없다.
+      allow update: if isOwner(uid)
+        && request.resource.data.totalXp is int
+        && validGain(request.resource.data.totalXp - resource.data.totalXp);
+
+      allow delete: if false;
+
+      match /quests/{questId} {
+        allow read, create, update, delete: if isOwner(uid);
+      }
+
+      // 완료 기록: 문서 ID = {questId}_{yyyyMMdd} 이어야 하고, 한 번 쓰면 고치거나 지울 수 없다.
+      match /completions/{completionId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid)
+          && completionId == request.resource.data.questId + '_' + request.resource.data.dateKey
+          && request.resource.data.xp in [10, 20, 40, 50];
+        allow update, delete: if false;
+      }
+
+      // 온실: 수확한 꽃은 추가만 할 수 있다.
+      match /greenhouse/{itemId} {
+        allow read, create: if isOwner(uid);
+        allow update, delete: if false;
+      }
+    }
+  }
+}

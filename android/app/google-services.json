@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "258874167309",
+    "project_id": "tium-676e0",
+    "storage_bucket": "tium-676e0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:258874167309:android:bc9d2642f5d68bf64e4544",
+        "android_client_info": {
+          "package_name": "com.tium.tium"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_o2uXWE94-7SglKHDgiMdKg6--rFHFeA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
