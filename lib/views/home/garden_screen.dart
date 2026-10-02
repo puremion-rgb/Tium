@@ -32,18 +32,20 @@ class GardenScreen extends ConsumerWidget {
           children: [
             GardenScene(
               weather: gardenWeatherOf(weather),
-              quests: state.quests,
+              quests: state.todayQuests,
               backgroundAlignment: const Alignment(0, 0.2),
               plantScale: 1.15,
-              lift: 0.17,
+              soilDepth: 0.2,
+              // 아래 버튼 줄(44px + 여백)이 화단 앞판 위에 올라가도록
+              panelHeight: 72 + MediaQuery.paddingOf(context).bottom,
             ),
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
                 child: Column(
                   children: [
                     LevelCard(profile: state.profile, weather: weather, translucent: true),
-                    const Spacer(),
+                    const SizedBox(height: 10),
                     // 발표·디자인 확인용 날씨 미리보기
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -55,7 +57,7 @@ class GardenScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const Spacer(),
                     Row(
                       children: [
                         FilledButton.tonal(
@@ -81,14 +83,7 @@ class GardenScreen extends ConsumerWidget {
                           label: const Text('온실'),
                         ),
                         const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.88), borderRadius: BorderRadius.circular(99)),
-                          child: Text(
-                            '식물 ${state.quests.length}그루',
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primaryDark),
-                          ),
-                        ),
+                        _TodayProgress(done: state.doneCount, total: state.todayQuests.length),
                       ],
                     ),
                   ],
@@ -123,6 +118,53 @@ class _PreviewChip extends StatelessWidget {
         showCheckmark: false,
         side: BorderSide.none,
         shape: const StadiumBorder(),
+      ),
+    );
+  }
+}
+
+/// 오늘의 진행 — '홈으로'·'온실' 버튼과 같은 흰색 알약 모양.
+/// 왼쪽 작은 원이 진행 바 역할을 한다 (예: ◔ 오늘 3/5).
+class _TodayProgress extends StatelessWidget {
+  const _TodayProgress({required this.done, required this.total});
+
+  final int done;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    final allDone = total > 0 && done >= total;
+    return Semantics(
+      label: total == 0 ? '오늘 할 퀘스트가 없어요' : '오늘의 퀘스트 $total개 중 $done개 완료',
+      excludeSemantics: true,
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.92), borderRadius: BorderRadius.circular(99)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (allDone)
+              const Icon(Icons.check_circle_rounded, size: 18, color: AppColors.primary)
+            else
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  value: total == 0 ? 0 : done / total,
+                  strokeWidth: 3,
+                  backgroundColor: AppColors.track,
+                  color: AppColors.primary,
+                  strokeCap: StrokeCap.round,
+                ),
+              ),
+            const SizedBox(width: 8),
+            Text(
+              total == 0 ? '오늘 퀘스트 없음' : (allDone ? '오늘 모두 완료' : '오늘 $done/$total'),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primaryDark),
+            ),
+          ],
+        ),
       ),
     );
   }

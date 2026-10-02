@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tium/data/repositories/fake_garden_repository.dart';
 import 'package:tium/models/category.dart';
 import 'package:tium/models/completion.dart';
+import 'package:tium/models/garden_rules.dart';
 import 'package:tium/models/greenhouse.dart';
 import 'package:tium/models/petal.dart';
 import 'package:tium/models/plant.dart';
@@ -234,6 +235,35 @@ void main() {
       expect(first.streak, 1);
       expect(second.streak, 1);
       repo.dispose();
+    });
+  });
+
+  group('화단 자리 (최대 $maxActiveQuests개)', () {
+    late FakeGardenRepository repo;
+
+    setUp(() => repo = FakeGardenRepository(latency: Duration.zero));
+    tearDown(() => repo.dispose());
+
+    QuestDraft draft(int i) => QuestDraft(title: '새 퀘스트 $i', category: QuestCategory.life, description: '');
+
+    test('8개까지는 심을 수 있고, 9번째는 GardenFullException', () async {
+      final start = (await repo.watchQuests().first).where((q) => q.active).length; // 처음 5개
+      for (var i = start; i < maxActiveQuests; i++) {
+        await repo.addQuest(draft(i));
+      }
+      final quests = await repo.watchQuests().first;
+      expect(quests.where((q) => q.active), hasLength(maxActiveQuests));
+      expect(() => repo.addQuest(draft(99)), throwsA(isA<GardenFullException>()));
+    });
+
+    test('하나를 쉬게 하면 자리가 생기고, 가득 찬 채로 다시 시작하면 막힌다', () async {
+      for (var i = 5; i < maxActiveQuests; i++) {
+        await repo.addQuest(draft(i));
+      }
+      await repo.setQuestActive('q1', active: false);
+      final added = await repo.addQuest(draft(100)); // 빈자리에 새 씨앗
+      expect(added.active, isTrue);
+      expect(() => repo.setQuestActive('q1', active: true), throwsA(isA<GardenFullException>()));
     });
   });
 }

@@ -11,9 +11,10 @@ class HomeState {
 
   final UserProfile profile;
 
-  /// 정원에 심어진 모든 퀘스트 (쉬는 중 포함)
+  /// 모든 퀘스트 (쉬는 중 포함)
   final List<Quest> quests;
 
+  /// 오늘 할 퀘스트 = 화단에 심겨 있는 식물 (쉬는 중인 퀘스트는 화단에서 빠진다)
   List<Quest> get todayQuests => quests.where((q) => q.active).toList();
   int get doneCount => todayQuests.where((q) => q.doneToday).length;
   bool get isEmpty => quests.isEmpty;

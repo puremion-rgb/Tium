@@ -56,7 +56,7 @@ class HomeScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(22),
                       child: SizedBox(
                         height: 210,
-                        child: GardenScene(weather: gardenWeatherOf(weather), quests: state.quests, plantScale: 0.85),
+                        child: GardenScene(weather: gardenWeatherOf(weather), quests: state.todayQuests, plantScale: 0.85),
                       ),
                     ),
                   ),

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
 import '../../app/theme.dart';
+import '../../models/garden_rules.dart';
 import '../../models/greenhouse.dart';
 import '../../models/petal.dart';
 import '../../models/plant.dart';
@@ -13,6 +14,7 @@ import '../../utils/level.dart';
 import '../../viewmodels/quest_view_models.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/garden/quest_plant.dart';
+import 'garden_full_dialog.dart';
 
 /// 23. 퀘스트 상세 — 성장 단계 보기, 다 자라면 수확
 class QuestDetailScreen extends ConsumerWidget {
@@ -61,15 +63,25 @@ class QuestDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 6),
                 TextButton(
                   onPressed: () async {
-                    await ref.read(questActionsProvider).setActive(quest.id, active: !quest.active);
+                    // 다시 시작하려면 화단에 빈자리가 있어야 한다.
+                    if (!quest.active && isGardenFull(ref)) {
+                      await showGardenFullDialog(context);
+                      return;
+                    }
+                    try {
+                      await ref.read(questActionsProvider).setActive(quest.id, active: !quest.active);
+                    } on GardenFullException {
+                      if (context.mounted) await showGardenFullDialog(context);
+                      return;
+                    }
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(quest.active ? '퀘스트를 쉬어요. 식물은 정원에 그대로 남아요' : '퀘스트를 다시 시작해요'),
+                        content: Text(quest.active ? '퀘스트를 쉬어요. 식물은 화단에서 잠시 빠지고, 자란 정도는 그대로예요' : '퀘스트를 다시 시작해요. 식물이 화단으로 돌아왔어요'),
                       ));
                     }
                   },
                   child: Text(
-                    quest.active ? '퀘스트 쉬기 (식물은 정원에 남아요)' : '퀘스트 다시 시작하기',
+                    quest.active ? '퀘스트 쉬기 (화단에서 잠시 빠져요)' : '퀘스트 다시 시작하기',
                     style: const TextStyle(color: Color(0xFF8C9387), decoration: TextDecoration.underline),
                   ),
                 ),

@@ -56,8 +56,17 @@ class RecordsScreen extends ConsumerWidget {
                             child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('이번 달 실천율', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                              Text('${(r.completionRate * 100).round()}%', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                              const Text('실천한 날', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                              Text.rich(
+                                TextSpan(children: [
+                                  TextSpan(text: '${r.doneDays.length}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                                  TextSpan(
+                                    text: ' / ${r.elapsedDays}일',
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                                  ),
+                                ]),
+                              ),
+                              const Text('하루 1개 이상 한 날', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                             ],
                           ),
                           ),

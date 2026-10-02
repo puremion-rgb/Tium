@@ -9,6 +9,7 @@ class MonthRecord {
     required this.month,
     required this.doneDays,
     required this.completionRate,
+    required this.elapsedDays,
     required this.byCategory,
     required this.totalCompletions,
   });
@@ -21,6 +22,9 @@ class MonthRecord {
 
   /// 지난 날 중 하나 이상 완료한 날의 비율 (0~1)
   final double completionRate;
+
+  /// 이번 달이면 오늘까지 지난 날 수, 지난 달이면 그 달의 날 수
+  final int elapsedDays;
   final Map<QuestCategory, int> byCategory;
   final int totalCompletions;
 }
@@ -61,6 +65,7 @@ final monthRecordProvider = Provider<AsyncValue<MonthRecord>>((ref) {
       month: month,
       doneDays: days,
       completionRate: elapsed == 0 ? 0 : days.length / elapsed,
+      elapsedDays: elapsed,
       byCategory: byCat,
       totalCompletions: inMonth.length,
     );

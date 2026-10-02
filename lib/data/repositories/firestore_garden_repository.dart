@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../models/category.dart';
 import '../../models/completion.dart';
+import '../../models/garden_rules.dart';
 import '../../models/greenhouse.dart';
 import '../../models/petal.dart';
 import '../../models/quest.dart';
@@ -268,6 +269,7 @@ class FirestoreGardenRepository implements GardenRepository {
   @override
   Future<Quest> addQuest(QuestDraft draft) async {
     final uid = await _uid();
+    if (await _activeCount(uid) >= maxActiveQuests) throw const GardenFullException();
     final ref = _quests(uid).doc();
     final quest = Quest(
       id: ref.id,
@@ -301,8 +303,17 @@ class FirestoreGardenRepository implements GardenRepository {
   @override
   Future<void> setQuestActive(String questId, {required bool active}) async {
     final uid = await _uid();
+    if (active) {
+      final doc = await _quests(uid).doc(questId).get();
+      final wasActive = doc.data()?['active'] as bool? ?? true;
+      if (!wasActive && await _activeCount(uid) >= maxActiveQuests) throw const GardenFullException();
+    }
     await _quests(uid).doc(questId).update({'active': active});
   }
+
+  /// 지금 화단에 심겨 있는(쉬는 중이 아닌) 퀘스트 수
+  Future<int> _activeCount(String uid) async =>
+      (await _quests(uid).where('active', isEqualTo: true).get()).size;
 
   @override
   Future<void> updateSettings({String? city, bool? morningAlarm}) async {

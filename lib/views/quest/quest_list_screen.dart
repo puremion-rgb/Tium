@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/router.dart';
 import '../../app/theme.dart';
 import '../../models/category.dart';
+import '../../models/garden_rules.dart';
 import '../../models/quest.dart';
 import '../../utils/level.dart';
 import '../../viewmodels/garden_providers.dart';
@@ -12,6 +13,7 @@ import '../../viewmodels/quest_view_models.dart';
 import '../../widgets/common/app_card.dart';
 import '../../widgets/common/state_view.dart';
 import '../../widgets/garden/quest_plant.dart';
+import 'garden_full_dialog.dart';
 
 /// 4. 퀘스트 목록
 class QuestListScreen extends ConsumerWidget {
@@ -21,6 +23,7 @@ class QuestListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final filter = ref.watch(questFilterProvider);
     final quests = ref.watch(filteredQuestsProvider);
+    final all = ref.watch(questsProvider).valueOrNull;
 
     return Scaffold(
       body: SafeArea(
@@ -41,12 +44,19 @@ class QuestListScreen extends ConsumerWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Pretendard'),
                     ),
-                    onPressed: () => context.push(Routes.questNew),
+                    onPressed: () => openNewQuest(context, ref),
                     icon: const Icon(Icons.add_rounded, size: 18),
                     label: const Text('퀘스트 추가'),
                   ),
                 ],
               ),
+              if (all != null && all.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                _GardenCapacityCard(
+                  active: all.where((q) => q.active).length,
+                  paused: all.where((q) => !q.active).length,
+                ),
+              ],
               const SizedBox(height: 14),
               ChoiceChipRow<QuestCategory?>(
                 items: const [null, ...QuestCategory.values],
@@ -60,7 +70,7 @@ class QuestListScreen extends ConsumerWidget {
                   loading: StateView.loading,
                   error: (e, _) => StateView.error(e, onRetry: () => ref.invalidate(questsProvider)),
                   data: (list) => list.isEmpty
-                      ? StateView.empty(onAdd: () => context.push(Routes.questNew))
+                      ? StateView.empty(onAdd: () => openNewQuest(context, ref))
                       : ListView.separated(
                           padding: const EdgeInsets.only(bottom: 24),
                           itemCount: list.length,
@@ -131,6 +141,56 @@ class QuestCard extends StatelessWidget {
             QuestPlant.forQuest(quest, size: 40),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// 현재 퀘스트 5 / 8 — 화단 자리가 몇 개 남았는지 보여 준다.
+class _GardenCapacityCard extends StatelessWidget {
+  const _GardenCapacityCard({required this.active, required this.paused});
+
+  final int active;
+  final int paused;
+
+  @override
+  Widget build(BuildContext context) {
+    final left = maxActiveQuests - active;
+    final full = left <= 0;
+    return AppCard(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              const Text('현재 퀘스트', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+              const Spacer(),
+              Text.rich(
+                TextSpan(children: [
+                  TextSpan(
+                    text: '$active',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: full ? const Color(0xFFE08A1E) : AppColors.primary),
+                  ),
+                  const TextSpan(
+                    text: ' / $maxActiveQuests',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                  ),
+                ]),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          GardenSlots(filled: active, size: 26),
+          const SizedBox(height: 10),
+          Text(
+            full
+                ? '정원이 가득 찼어요 · 수확하거나 쉬게 하면 자리가 생겨요'
+                : '화단에 $left자리 더 심을 수 있어요${paused > 0 ? ' · 쉬는 중 $paused개' : ''}',
+            style: TextStyle(fontSize: 12, color: full ? const Color(0xFFB06A10) : AppColors.textSecondary),
+          ),
+        ],
       ),
     );
   }

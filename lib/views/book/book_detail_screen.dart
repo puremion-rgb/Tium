@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../app/router.dart';
 import '../../app/theme.dart';
 import '../../models/book.dart';
 import '../../viewmodels/book_view_models.dart';
+import '../quest/garden_full_dialog.dart';
 import 'book_cover.dart';
 
 /// 7. 도서 상세
@@ -68,7 +67,7 @@ class BookDetailScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
               child: FilledButton(
-                onPressed: () => context.push(Routes.questNew, extra: b.title),
+                onPressed: () => openNewQuest(context, ref, bookTitle: b.title),
                 child: const Text('이 책으로 퀘스트 추가'),
               ),
             ),

@@ -3,6 +3,7 @@ import 'dart:math';
 
 import '../../models/category.dart';
 import '../../models/completion.dart';
+import '../../models/garden_rules.dart';
 import '../../models/greenhouse.dart';
 import '../../models/petal.dart';
 import '../../models/quest.dart';
@@ -251,6 +252,7 @@ class FakeGardenRepository implements GardenRepository {
   @override
   Future<Quest> addQuest(QuestDraft draft) async {
     await Future<void>.delayed(latency);
+    if (_quests.where((q) => q.active).length >= maxActiveQuests) throw const GardenFullException();
     final quest = Quest(
       id: 'q${_idSeq++}',
       title: draft.title,
@@ -281,7 +283,12 @@ class FakeGardenRepository implements GardenRepository {
   @override
   Future<void> setQuestActive(String questId, {required bool active}) async {
     final index = _quests.indexWhere((q) => q.id == questId);
-    if (index >= 0) _quests[index] = _quests[index].copyWith(active: active);
+    if (index < 0) return;
+    // 쉬던 퀘스트를 다시 시작할 때도 화단 자리가 있어야 한다.
+    if (active && !_quests[index].active && _quests.where((q) => q.active).length >= maxActiveQuests) {
+      throw const GardenFullException();
+    }
+    _quests[index] = _quests[index].copyWith(active: active);
     _emit();
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/providers.dart';
 import '../models/category.dart';
+import '../models/garden_rules.dart';
 import '../models/greenhouse.dart';
 import '../models/quest.dart';
 import 'garden_providers.dart';
@@ -131,6 +132,9 @@ class QuestFormViewModel extends AutoDisposeFamilyNotifier<QuestFormState, Quest
         ));
       }
       return true;
+    } on GardenFullException {
+      state = state.copyWith(saving: false, error: '정원이 가득 찼어요! 수확하거나 쉬는 퀘스트로 바꾼 뒤 추가해 주세요');
+      return false;
     } catch (_) {
       state = state.copyWith(saving: false, error: '저장하지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요');
       return false;
